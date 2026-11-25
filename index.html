@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Duality Dice</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 10px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #18181f;
+      color: #f3f4f6;
+      font-size: 13px;
+    }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .title {
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .status {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    .dice-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .die {
+      background: #23232e;
+      border: 1px solid #323242;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+    .die-name {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .hope-text { color: #fbbf24; }
+    .fear-text { color: #c084fc; }
+    .crit-text { color: #34d399; }
+    .die-num {
+      font-size: 26px;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+    .summary {
+      background: #23232e;
+      border: 1px solid #323242;
+      border-radius: 8px;
+      padding: 7px 10px;
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    label {
+      display: block;
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 3px;
+    }
+    input, select {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #323242;
+      background: #121218;
+      color: #f3f4f6;
+      font-size: 13px;
+    }
+    .roll-btn {
+      width: 100%;
+      padding: 9px;
+      border: none;
+      border-radius: 8px;
+      background: #3b3b52;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .roll-btn:hover { background: #4b4b68; }
+    .roll-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .history-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 12px 0 6px;
+      gap: 8px;
+    }
+    .history-bar span {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+    .history-bar select {
+      width: auto;
+      max-width: 165px;
+      padding: 4px 7px;
+      font-size: 12px;
+    }
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .item {
+      background: #23232e;
+      border: 1px solid #323242;
+      border-left: 3px solid #6b7280;
+      border-radius: 6px;
+      padding: 7px 9px;
+    }
+    .item.hope { border-left-color: #fbbf24; }
+    .item.fear { border-left-color: #c084fc; }
+    .item.crit { border-left-color: #34d399; }
+    .item-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+    .item-body {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .item-sub {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+    .empty {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 12px;
+      padding: 16px 6px;
+    }
+    .clear-wrap {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+    .clear-btn {
+      background: none;
+      border: 1px solid #323242;
+      color: #9ca3af;
+      border-radius: 5px;
+      padding: 3px 8px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="title">Duality Dice (2d12)</div>
+    <div class="status" id="status">Connecting...</div>
+  </div>
+
+  <div class="dice-row">
+    <div class="die">
+      <div class="die-name hope-text">Hope (d12)</div>
+      <div class="die-num hope-text" id="hopeOut">-</div>
+    </div>
+    <div class="die">
+      <div class="die-name fear-text">Fear (d12)</div>
+      <div class="die-num fear-text" id="fearOut">-</div>
+    </div>
+  </div>
+
+  <div class="summary" id="summaryOut">Ready</div>
+
+  <div class="form-row">
+    <div>
+      <label for="modInput">Modifier</label>
+      <input type="number" id="modInput" value="0" />
+    </div>
+    <div>
+      <label for="advSelect">Adv / Disadv</label>
+      <select id="advSelect">
+        <option value="none">Normal</option>
+        <option value="adv">Advantage (+1d6)</option>
+        <option value="dis">Disadvantage (-1d6)</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="roll-btn" id="rollBtn">Roll 2d12</button>
+
+  <div class="history-bar">
+    <span>History by Player</span>
+    <select id="playerFilter">
+      <option value="ALL">All Players</option>
+    </select>
+  </div>
+
+  <div class="list" id="historyList"></div>
+
+  <div class="clear-wrap">
+    <button class="clear-btn" id="clearBtn">Clear My Rolls</button>
+  </div>
+
+  <script type="module">
+    import OBR from "https://esm.sh/@owlbear-rodeo/sdk@3.0.0";
+
+    const META_KEY = "duality.dice/rolls";
+    const CHANNEL = "duality.dice/roll";
+    const LIMIT = 20;
+
+    const statusEl = document.getElementById("status");
+    const hopeOut = document.getElementById("hopeOut");
+    const fearOut = document.getElementById("fearOut");
+    const summaryOut = document.getElementById("summaryOut");
+    const modInput = document.getElementById("modInput");
+    const advSelect = document.getElementById("advSelect");
+    const rollBtn = document.getElementById("rollBtn");
+    const playerFilter = document.getElementById("playerFilter");
+    const historyList = document.getElementById("historyList");
+    const clearBtn = document.getElementById("clearBtn");
+
+    let myId = "";
+    let myRolls = [];
+    let party = [];
+    let liveRolls = [];
+
+    function d(sides) {
+      return Math.floor(Math.random() * sides) + 1;
+    }
+
+    function esc(v) {
+      return String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function getAllRolls() {
+      const map = new Map();
+
+      myRolls.forEach((r) => {
+        if (r?.id) map.set(r.id, r);
+      });
+
+      party.forEach((p) => {
+        const list = p?.metadata?.[META_KEY];
+        if (Array.isArray(list)) {
+          list.forEach((r) => {
+            if (r?.id) {
+              map.set(r.id, {
+                ...r,
+                playerId: p.id,
+                playerName: p.name || r.playerName || "Player",
+                playerColor: p.color || r.playerColor || "#e5e7eb"
+              });
+            }
+          });
+        }
+      });
+
+      liveRolls.forEach((r) => {
+        if (r?.id && !map.has(r.id)) map.set(r.id, r);
+      });
+
+      return Array.from(map.values()).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    }
+
+    function refreshFilter(rolls) {
+      const prev = playerFilter.value || "ALL";
+      const users = new Map();
+
+      party.forEach((p) => {
+        if (p?.id) users.set(p.id, p.name || "Player");
+      });
+      rolls.forEach((r) => {
+        if (r?.playerId) users.set(r.playerId, r.playerName || "Player");
+      });
+
+      playerFilter.innerHTML = `<option value="ALL">All Players (${users.size})</option>`;
+      users.forEach((name, id) => {
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = id === myId ? `${name} (You)` : name;
+        playerFilter.appendChild(opt);
+      });
+
+      playerFilter.value = [...playerFilter.options].some((o) => o.value === prev) ? prev : "ALL";
+    }
+
+    function render() {
+      const all = getAllRolls();
+      refreshFilter(all);
+
+      if (all.length > 0) {
+        const top = all[0];
+        hopeOut.textContent = top.hope;
+        fearOut.textContent = top.fear;
+        summaryOut.textContent = `${top.playerName}: ${top.total} — ${top.label}`;
+      }
+
+      const selected = playerFilter.value;
+      const items = selected === "ALL" ? all : all.filter((r) => r.playerId === selected);
+
+      historyList.innerHTML = "";
+      if (!items.length) {
+        historyList.innerHTML = `<div class="empty">No rolls yet.</div>`;
+        return;
+      }
+
+      items.forEach((r) => {
+        const badgeClass = r.type === "crit" ? "crit-text" : r.type === "fear" ? "fear-text" : "hope-text";
+        const div = document.createElement("div");
+        div.className = `item ${r.type}`;
+        div.innerHTML = `
+          <div class="item-head">
+            <strong style="color:${esc(r.playerColor)}">${esc(r.playerName)}</strong>
+            <span>${esc(r.time)}</span>
+          </div>
+          <div class="item-body">
+            <span>Total: ${r.total}</span>
+            <span class="${badgeClass}">${esc(r.label)}</span>
+          </div>
+          <div class="item-sub">
+            Hope: <b>${r.hope}</b> | Fear: <b>${r.fear}</b> ${esc(r.modText || "")}
+          </div>
+        `;
+        historyList.appendChild(div);
+      });
+    }
+
+    OBR.onReady(async () => {
+      statusEl.textContent = "Ready";
+      myId = await OBR.player.getId();
+
+      const myMeta = await OBR.player.getMetadata();
+      if (Array.isArray(myMeta?.[META_KEY])) {
+        myRolls = myMeta[META_KEY];
+      }
+
+      party = await OBR.party.getPlayers();
+      render();
+
+      OBR.party.onChange((players) => {
+        party = players;
+        render();
+      });
+
+      OBR.player.onChange((player) => {
+        myId = player.id;
+        if (Array.isArray(player.metadata?.[META_KEY])) {
+          myRolls = player.metadata[META_KEY];
+          render();
+        }
+      });
+
+      OBR.broadcast.onMessage(CHANNEL, (event) => {
+        const r = event.data;
+        if (!r?.id) return;
+        liveRolls = [r, ...liveRolls.filter((x) => x.id !== r.id)].slice(0, 40);
+        render();
+      });
+
+      playerFilter.addEventListener("change", render);
+
+      rollBtn.addEventListener("click", async () => {
+        rollBtn.disabled = true;
+        try {
+          const [id, name, color] = await Promise.all([
+            OBR.player.getId(),
+            OBR.player.getName(),
+            OBR.player.getColor()
+          ]);
+
+          const mod = parseInt(modInput.value, 10) || 0;
+          const adv = advSelect.value;
+
+          const hope = d(12);
+          const fear = d(12);
+          let d6 = 0;
+          const parts = [];
+
+          if (adv === "adv") {
+            d6 = d(6);
+            parts.push(`+ ${d6} (Adv)`);
+          } else if (adv === "dis") {
+            d6 = -d(6);
+            parts.push(`- ${Math.abs(d6)} (Dis)`);
+          }
+
+          if (mod !== 0) {
+            parts.push(mod > 0 ? `+ ${mod}` : `- ${Math.abs(mod)}`);
+          }
+
+          const total = hope + fear + d6 + mod;
+          let type = "hope";
+          let label = "with Hope";
+
+          if (hope === fear) {
+            type = "crit";
+            label = "Critical Success";
+          } else if (fear > hope) {
+            type = "fear";
+            label = "with Fear";
+          }
+
+          const ts = Date.now();
+          const entry = {
+            id: `${id}-${ts}-${Math.random().toString(36).slice(2, 6)}`,
+            ts,
+            playerId: id,
+            playerName: name || "Player",
+            playerColor: color || "#e5e7eb",
+            hope,
+            fear,
+            total,
+            type,
+            label,
+            modText: parts.length ? `(${parts.join(" ")})` : "",
+            time: new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          };
+
+          myRolls = [entry, ...myRolls].slice(0, LIMIT);
+          liveRolls = [entry, ...liveRolls];
+          render();
+
+          await OBR.player.setMetadata({ [META_KEY]: myRolls });
+          await OBR.broadcast.sendMessage(CHANNEL, entry, { destination: "ALL" });
+        } finally {
+          rollBtn.disabled = false;
+        }
+      });
+
+      clearBtn.addEventListener("click", async () => {
+        myRolls = [];
+        liveRolls = liveRolls.filter((r) => r.playerId !== myId);
+        render();
+        await OBR.player.setMetadata({ [META_KEY]: [] });
+      });
+    });
+  </script>
+</body>
+</html>
