@@ -1,0 +1,17 @@
+{
+  "name": "Duality Dice",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "author": "iddungeonanddragon",
+  "homepage_url": "https://iddungeonanddragon.github.io/DualityDice/",
+  "icon": "/DualityDice/icon.svg",
+  "description": "Lightweight 2d12 Hope & Fear dice roller for Daggerheart.",
+  "action": {
+    "title": "Duality Dice",
+    "icon": "/DualityDice/icon.svg",
+    "popover": "/DualityDice/",
+    "height": 540,
+    "width": 340
+  },
+  "background_url": "/DualityDice/background.html"
+}
