@@ -317,7 +317,7 @@
         const top = all[0];
         hopeOut.textContent = top.hope;
         fearOut.textContent = top.fear;
-        summaryOut.textContent = `${top.playerName}: ${top.total} — ${top.label}`;
+        summaryOut.textContent = `${top.playerName}: ${top.total} [Hope ${top.hope} | Fear ${top.fear}${top.modText || ""}] (${top.label})`;
       }
 
       const selected = playerFilter.value;
@@ -403,10 +403,10 @@
 
           if (adv === "adv") {
             d6 = d(6);
-            parts.push(`+ ${d6} (Adv)`);
+            parts.push(`+ ${d6} Adv`);
           } else if (adv === "dis") {
             d6 = -d(6);
-            parts.push(`- ${Math.abs(d6)} (Dis)`);
+            parts.push(`- ${Math.abs(d6)} Dis`);
           }
 
           if (mod !== 0) {
@@ -437,7 +437,7 @@
             total,
             type,
             label,
-            modText: parts.length ? `(${parts.join(" ")})` : "",
+            modText: parts.length ? ` ${parts.join(" ")}` : "",
             time: new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
           };
 
